@@ -1,4 +1,3 @@
- 
 var jazzTableElement = null;
 
 
@@ -39,14 +38,13 @@ JazzTable.prototype = {
     
     this.jsonObjectTable = auxjsonObjectTableBuffer;
       
-    //obtains the clumn key identifiers
     auxjsonObjectTableBuffer.head.id = _.uniqueId("jazz-row-");
     var auxKeys = _.map(auxjsonObjectTableBuffer.head.cells, function(cell){
       return cell.innerHTML;
     });
     this.jazzModel.sortingKeys = auxKeys;
     
-    console.log("column keys to be used", auxKeys);
+    //console.log("column keys to be used", auxKeys);
     
     _.each( _.values( auxjsonObjectTableBuffer.body ), function(element, index, list ){
       element.id = _.uniqueId("jazz-row-");
@@ -59,13 +57,27 @@ JazzTable.prototype = {
       
     });
       
-    console.log( jsonBuffer );
     this.jazzModel.jsonObjectTable = jsonBuffer;
   },
   renderTable : function(){
     
-  },
-  jazzRenderingElement : {
+    var auxTableBuffer = document.createElement("TABLE");
+    //Definition of table Head
+    var auxTableBufferHead = auxTableBuffer.createTHead();
+    auxTableBufferHead.id = _.uniqueId("jazz-head-");
+    var auxTr = document.createElement("tr");
+    _.each( this.jazzModel.sortingKeys, function( key  ){
+      var auxTh = document.createElement("th");
+      //#TODO add cell identifier
+      auxTh.innerHTML = key;
+      auxTr.appendChild( auxTh  );
+    });
+    auxTableBufferHead.appendChild( auxTr );
+    //Definition of table Body
+    
+    console.log( auxTableBuffer );
+    
+    
     
   }
   
