@@ -27,6 +27,8 @@ JazzTable.prototype = {
     sortingOrder : "",
     sortingKeys : [],
     jsonObjectTable : null,
+    // displayingBuffer properties
+    
     
   },
   
@@ -64,7 +66,7 @@ JazzTable.prototype = {
     var auxTableBuffer = document.createElement("TABLE");
     //Definition of table Head
     var auxTableBufferHead = auxTableBuffer.createTHead();
-    auxTableBufferHead.id = _.uniqueId("jazz-head-");
+    auxTableBufferHead.id = "jazz-head";
     var auxTr = document.createElement("tr");
     _.each( this.jazzModel.sortingKeys, function( key  ){
       var auxTh = document.createElement("th");
@@ -74,6 +76,24 @@ JazzTable.prototype = {
     });
     auxTableBufferHead.appendChild( auxTr );
     //Definition of table Body
+    var auxTableBufferBody = auxTableBuffer.appendChild( document.createElement("tbody"));
+    auxTableBufferBody.id = "jazz-body";
+    //Append rows to body
+    var sortingKeys = this.jazzModel.sortingKeys;
+    _.each( this.jazzModel.jsonObjectTable, function( row ){
+      var auxTr = document.createElement("tr");
+      //Append each value to the row
+      _.each( sortingKeys , function( key ){
+        var auxTd = document.createElement("td");
+        //#TODO add cell identifier
+        auxTd.innerHTML = row[key];
+        auxTr.appendChild( auxTd);
+      });
+      auxTableBufferBody.appendChild( auxTr);
+      //console.log(row);
+    });
+    
+    
     
     console.log( auxTableBuffer );
     
