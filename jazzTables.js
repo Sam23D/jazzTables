@@ -26,13 +26,22 @@ JazzTable.prototype = {
     
     sortingOrder : "",
     sortingKeys : [],
-    jsonObjectTable : null,
+    jsonObjectTable : {},     //json representation of data
+    tableObject:(function(){  //table object of the jsonObjectTable
+      var auxTableBuffer = document.createElement("table");
+      var auxTableBufferHead = auxTableBuffer.createTHead();
+      auxTableBufferHead.id = "jazz-head";
+      var auxTableBufferBody = auxTableBuffer.appendChild( document.createElement("tbody"));
+      auxTableBufferBody.id = "jazz-body";
+      
+      return auxTableBuffer;
+    })(),
     // displayingBuffer properties
     
-    
   },
-  
-  parseTable : function(  ){ //generates de json object from an already rendered table
+
+
+  parseTable : function(){ //generates de json object from an already rendered table
     var jsonBuffer = [];
     var auxjsonObjectTableBuffer = {};
     auxjsonObjectTableBuffer.head = _.first(this.tableElement.rows);
@@ -40,7 +49,6 @@ JazzTable.prototype = {
     
     this.jsonObjectTable = auxjsonObjectTableBuffer;
       
-    auxjsonObjectTableBuffer.head.id = _.uniqueId("jazz-row-");
     var auxKeys = _.map(auxjsonObjectTableBuffer.head.cells, function(cell){
       return cell.innerHTML;
     });
@@ -49,7 +57,7 @@ JazzTable.prototype = {
     //console.log("column keys to be used", auxKeys);
     
     _.each( _.values( auxjsonObjectTableBuffer.body ), function(element, index, list ){
-      element.id = _.uniqueId("jazz-row-");
+      
       var auxCellsValues =  _.map(element.cells, function(cell){
         return cell.innerHTML;
       });
@@ -61,9 +69,11 @@ JazzTable.prototype = {
       
     this.jazzModel.jsonObjectTable = jsonBuffer;
   },
+  
+  
   renderTable : function(){
     
-    var auxTableBuffer = document.createElement("TABLE");
+    var auxTableBuffer = document.createElement("table");
     //Definition of table Head
     var auxTableBufferHead = auxTableBuffer.createTHead();
     auxTableBufferHead.id = "jazz-head";
@@ -81,6 +91,7 @@ JazzTable.prototype = {
     //Append rows to body
     var sortingKeys = this.jazzModel.sortingKeys;
     _.each( this.jazzModel.jsonObjectTable, function( row ){
+      
       var auxTr = document.createElement("tr");
       //Append each value to the row
       _.each( sortingKeys , function( key ){
@@ -90,16 +101,87 @@ JazzTable.prototype = {
         auxTr.appendChild( auxTd);
       });
       auxTableBufferBody.appendChild( auxTr);
-      //console.log(row);
+    
+    });
+    //console.log( auxTableBuffer );
+    this.jazzModel.tableObject = auxTableBuffer;
+  },
+  
+  
+  generateTable : function(){
+    
+    var auxTableBuffer = document.createElement("table");
+    
+    //Definition of table Head
+    this.renderHead();
+    //Definition of table Body
+    var auxTableBufferBody = auxTableBuffer.appendChild( document.createElement("tbody"));
+    auxTableBufferBody.id = "jazz-body";
+    //Append rows to body
+    var sortingKeys = this.jazzModel.sortingKeys;
+    _.each( this.jazzModel.jsonObjectTable, function( row ){
+      
+      var auxTr = document.createElement("tr");
+      //Append each value to the row
+      _.each( sortingKeys , function( key ){
+        var auxTd = document.createElement("td");
+        //#TODO add cell identifier
+        auxTd.innerHTML = row[key];
+        auxTr.appendChild( auxTd);
+      });
+      auxTableBufferBody.appendChild( auxTr);
+    
+    });
+    //console.log( auxTableBuffer );
+    this.jazzModel.tableObject = auxTableBuffer;
+  },
+  
+  
+  renderHead: function(){
+    this.jazzModel.tableObject.tHead = document.createElement("thead");
+    var tableHead = this.jazzModel.tableObject.tHead;
+    
+    
+    var auxTr = document.createElement("tr");
+    _.each( this.jazzModel.sortingKeys, function( key  ){
+    
+      var auxTh = document.createElement("th");
+      //#TODO add cell identifier
+      auxTh.innerHTML = key;
+      auxTr.appendChild( auxTh  );
+    
+      
+    });
+    tableHead.appendChild( auxTr );
+    //console.log( tableHead);
+  },
+  
+  
+  renderBody: function(){
+    
+    this.jazzModel.tableObject.tBodies[0] = document.createElement("tbody");
+    var tableBody = this.jazzModel.tableObject.tBodies[0];
+    
+    var sortingKeys = this.jazzModel.sortingKeys;
+    _.each( this.jazzModel.jsonObjectTable, function( row ){
+      
+      var auxTr = document.createElement("tr");
+      //Append each value to the row
+      _.each( sortingKeys , function( key ){
+        var auxTd = document.createElement("td");
+        //#TODO add cell identifier
+        auxTd.innerHTML = row[key];
+        auxTr.appendChild( auxTd);
+      });
+      tableBody.appendChild( auxTr);
+    
     });
     
     
+    console.log( tableBody);
     
-    console.log( auxTableBuffer );
-    
-    
-    
-  }
+  },
+  
   
 };
 
@@ -109,4 +191,5 @@ var onReady = function(){
   
   jazzTableElement = new JazzTable( "table1" );
   jazzTableElement.parseTable();
+  
 };
