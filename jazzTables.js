@@ -38,8 +38,8 @@ JazzTable.prototype = {
       
     }
   },
-  getKeys : function(){
-    
+  getKeys : function(){//returns all the keys that exists in the json data
+    //#TODO verify that data is not null
     return _.keys(this.jazzModel.backUpJSON[0]);
     
   },
@@ -48,17 +48,19 @@ JazzTable.prototype = {
     var auxjsonObjectTableBuffer = {};
     auxjsonObjectTableBuffer.head = _.first(this.tableElement.rows);
     auxjsonObjectTableBuffer.body = _.rest(this.tableElement.rows);
-    
+
     var auxKeys = _.map(auxjsonObjectTableBuffer.head.cells, function(cell){
       return cell.innerHTML;
     });
-    //this.jazzModel.sortingKeys = auxKeys;
-    
+
     _.each( _.values( auxjsonObjectTableBuffer.body ), function(element, index, list ){
       
       var auxCellsValues =  _.map(element.cells, function(cell){
+
         return cell.innerHTML;
+
       });
+
       var auxJsonBufferRow = _.object(_.zip( auxKeys, auxCellsValues ));
       jsonBuffer.push( auxJsonBufferRow );
       
@@ -66,9 +68,6 @@ JazzTable.prototype = {
       
     this.jazzModel.backUpJSON = jsonBuffer;
   },
-  
-  
-  
   generateTable : function(){//updates current table
     
     var auxTableBuffer = document.createElement("table");
@@ -76,7 +75,6 @@ JazzTable.prototype = {
     this.renderHead( this.getKeys() );
     //Refresh jazzTable.jazzModel.backUpTable
     this.renderBody( this.jazzModel.backUpJSON  );
-    
     
   },
   
@@ -120,7 +118,6 @@ JazzTable.prototype = {
     });
     
   },
-  
   
   
 };
