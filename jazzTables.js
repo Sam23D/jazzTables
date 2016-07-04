@@ -16,7 +16,6 @@ var JazzTable = function( tableId ){
   }else{
     console.error("No element with id " + tableId + " refered to null Object instead");
   }
-
   
 };
 
@@ -24,10 +23,8 @@ var JazzTable = function( tableId ){
 JazzTable.prototype = {
   jazzModel : {
     
-    sortingOrder : "",
-    sortingKeys : [],
-    jsonObjectTable : {},     //json representation of data
-    tableObject:(function(){  //table object of the jsonObjectTable
+    backUpJSON : {},          //json representation of table data
+    backUpTable:(function(){  //table object of the backUpJSON
       var auxTableBuffer = document.createElement("table");
       var auxTableBufferHead = auxTableBuffer.createTHead();
       auxTableBufferHead.id = "jazz-head";
@@ -36,25 +33,26 @@ JazzTable.prototype = {
       
       return auxTableBuffer;
     })(),
-    // displayingBuffer properties
+    // object that will be used as buffer for html renderization
+    bufferData : {
+      
+    }
+  },
+  getKeys : function(){
+    
+    return _.keys(this.jazzModel.backUpJSON[0]);
     
   },
-
-
   parseTable : function(){ //generates de json object from an already rendered table
     var jsonBuffer = [];
     var auxjsonObjectTableBuffer = {};
     auxjsonObjectTableBuffer.head = _.first(this.tableElement.rows);
     auxjsonObjectTableBuffer.body = _.rest(this.tableElement.rows);
     
-    this.jsonObjectTable = auxjsonObjectTableBuffer;
-      
     var auxKeys = _.map(auxjsonObjectTableBuffer.head.cells, function(cell){
       return cell.innerHTML;
     });
-    this.jazzModel.sortingKeys = auxKeys;
-    
-    //console.log("column keys to be used", auxKeys);
+    //this.jazzModel.sortingKeys = auxKeys;
     
     _.each( _.values( auxjsonObjectTableBuffer.body ), function(element, index, list ){
       
@@ -62,88 +60,32 @@ JazzTable.prototype = {
         return cell.innerHTML;
       });
       var auxJsonBufferRow = _.object(_.zip( auxKeys, auxCellsValues ));
-      
       jsonBuffer.push( auxJsonBufferRow );
       
     });
       
-    this.jazzModel.jsonObjectTable = jsonBuffer;
+    this.jazzModel.backUpJSON = jsonBuffer;
   },
   
   
-  renderTable : function(){
+  
+  generateTable : function(){//updates current table
     
     var auxTableBuffer = document.createElement("table");
-    //Definition of table Head
-    var auxTableBufferHead = auxTableBuffer.createTHead();
-    auxTableBufferHead.id = "jazz-head";
-    var auxTr = document.createElement("tr");
-    _.each( this.jazzModel.sortingKeys, function( key  ){
-      var auxTh = document.createElement("th");
-      //#TODO add cell identifier
-      auxTh.innerHTML = key;
-      auxTr.appendChild( auxTh  );
-    });
-    auxTableBufferHead.appendChild( auxTr );
-    //Definition of table Body
-    var auxTableBufferBody = auxTableBuffer.appendChild( document.createElement("tbody"));
-    auxTableBufferBody.id = "jazz-body";
-    //Append rows to body
-    var sortingKeys = this.jazzModel.sortingKeys;
-    _.each( this.jazzModel.jsonObjectTable, function( row ){
-      
-      var auxTr = document.createElement("tr");
-      //Append each value to the row
-      _.each( sortingKeys , function( key ){
-        var auxTd = document.createElement("td");
-        //#TODO add cell identifier
-        auxTd.innerHTML = row[key];
-        auxTr.appendChild( auxTd);
-      });
-      auxTableBufferBody.appendChild( auxTr);
+    //Refresh jazzTable.jazzModel.backUpTable
+    this.renderHead( this.getKeys() );
+    //Refresh jazzTable.jazzModel.backUpTable
+    this.renderBody( this.jazzModel.backUpJSON  );
     
-    });
-    //console.log( auxTableBuffer );
-    this.jazzModel.tableObject = auxTableBuffer;
+    
   },
   
   
-  generateTable : function(){
-    
-    var auxTableBuffer = document.createElement("table");
-    
-    //Definition of table Head
-    this.renderHead();
-    //Definition of table Body
-    var auxTableBufferBody = auxTableBuffer.appendChild( document.createElement("tbody"));
-    auxTableBufferBody.id = "jazz-body";
-    //Append rows to body
-    var sortingKeys = this.jazzModel.sortingKeys;
-    _.each( this.jazzModel.jsonObjectTable, function( row ){
-      
-      var auxTr = document.createElement("tr");
-      //Append each value to the row
-      _.each( sortingKeys , function( key ){
-        var auxTd = document.createElement("td");
-        //#TODO add cell identifier
-        auxTd.innerHTML = row[key];
-        auxTr.appendChild( auxTd);
-      });
-      auxTableBufferBody.appendChild( auxTr);
-    
-    });
-    //console.log( auxTableBuffer );
-    this.jazzModel.tableObject = auxTableBuffer;
-  },
-  
-  
-  renderHead: function(){
-    this.jazzModel.tableObject.tHead = document.createElement("thead");
-    var tableHead = this.jazzModel.tableObject.tHead;
-    
-    
+  renderHead: function( columnsList ){//updates curent jazzModel.objectTable's head
+    this.jazzModel.backUpTable.tHead = document.createElement("thead");
+    var tableHead = this.jazzModel.backUpTable.tHead;
     var auxTr = document.createElement("tr");
-    _.each( this.jazzModel.sortingKeys, function( key  ){
+    _.each( columnsList , function( key  ){
     
       var auxTh = document.createElement("th");
       //#TODO add cell identifier
@@ -157,13 +99,13 @@ JazzTable.prototype = {
   },
   
   
-  renderBody: function(){
+  renderBody: function( jsonObject ){//updates curent jazzModel.objectTable's body
     
-    this.jazzModel.tableObject.tBodies[0] = document.createElement("tbody");
-    var tableBody = this.jazzModel.tableObject.tBodies[0];
-    
-    var sortingKeys = this.jazzModel.sortingKeys;
-    _.each( this.jazzModel.jsonObjectTable, function( row ){
+    this.jazzModel.backUpTable.tBodies[0] = document.createElement("tbody");
+    var tableBody = this.jazzModel.backUpTable.tBodies[0];
+    tableBody.id = "jazz-body";
+    var sortingKeys = this.getKeys();//head of the table
+    _.each( jsonObject, function( row ){
       
       var auxTr = document.createElement("tr");
       //Append each value to the row
@@ -174,13 +116,11 @@ JazzTable.prototype = {
         auxTr.appendChild( auxTd);
       });
       tableBody.appendChild( auxTr);
-    
+      
     });
     
-    
-    console.log( tableBody);
-    
   },
+  
   
   
 };
