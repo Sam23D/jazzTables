@@ -1,10 +1,7 @@
 var jazzTableElement = null;
 
-
-
 //Library
 var JazzTable = function( tableId ){
-  
   
   //porperties
   this.tableElement = {};
@@ -38,12 +35,16 @@ JazzTable.prototype = {
       
     }
   },
-  getKeys : function(){//returns all the keys that exists in the json data
+  getTableKeys : function(){//returns all the keys that exists in the json data
     //#TODO verify that data is not null
     return _.keys(this.jazzModel.backUpJSON[0]);
     
   },
   parseTable : function(){ //generates de json object from an already rendered table
+    if(  this.tableElement.rows === undefined ){
+      console.error("Cannot parse because there are no table's rows")
+      return
+    }
     var jsonBuffer = [];
     var auxjsonObjectTableBuffer = {};
     auxjsonObjectTableBuffer.head = _.first(this.tableElement.rows);
@@ -68,11 +69,11 @@ JazzTable.prototype = {
       
     this.jazzModel.backUpJSON = jsonBuffer;
   },
-  generateTable : function(){//updates current table
+  generateTable : function(){//updates current table html but does not render
     
     var auxTableBuffer = document.createElement("table");
     //Refresh jazzTable.jazzModel.backUpTable
-    this.renderHead( this.getKeys() );
+    this.renderHead( this.getTableKeys() );
     //Refresh jazzTable.jazzModel.backUpTable
     this.renderBody( this.jazzModel.backUpJSON  );
     
@@ -102,7 +103,7 @@ JazzTable.prototype = {
     this.jazzModel.backUpTable.tBodies[0] = document.createElement("tbody");
     var tableBody = this.jazzModel.backUpTable.tBodies[0];
     tableBody.id = "jazz-body";
-    var sortingKeys = this.getKeys();//head of the table
+    var sortingKeys = this.getTableKeys();//head of the table
     _.each( jsonObject, function( row ){
       
       var auxTr = document.createElement("tr");
@@ -118,6 +119,31 @@ JazzTable.prototype = {
     });
     
   },
+  renderTable: function(){
+    this.tableElement.innerHTML = this.jazzModel.backUpTable.innerHTML;
+  },
+  addRow : function( child ){// will add a child to the model's Json and re render the table
+    if( this.validStructure(child) ){
+      console.log("agregando:")
+      console.log(child)
+      this.jazzModel.backUpJSON.push(child)
+      this.generateTable()
+      this.renderTable()
+    }else{
+      console.error("The child ",child," does not have a valid structure", this.getTableKeys() )
+    }
+  },
+  validStructure: function( jsonObj ){
+    //check for null tableKeys
+    if( _.keys(jsonObj).length === 0 ){
+      if( _.keys(this.getTableKeys()).length === 0 ){
+        return true
+      }else{
+        return false
+      }
+    }
+    return _.difference( _.keys(jsonObj), this.getTableKeys()).length === 0;
+  }
   
   
 };
